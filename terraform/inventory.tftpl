@@ -1,0 +1,44 @@
+%{ for i, host in lb_vm_names ~}
+${lb_vm_names[i]} ansible_host=${lb_ip_address_list[i]}
+%{ endfor ~}
+%{ for i, host in mon_vm_names ~}
+${mon_vm_names[i]} ansible_host=${mon_ip_address_list[i]}
+%{ endfor ~}
+%{ for i, host in mds_vm_names ~}
+${mds_vm_names[i]} ansible_host=${mds_ip_address_list[i]}
+%{ endfor ~}
+%{ for i, host in osd_vm_names ~}
+${osd_vm_names[i]} ansible_host=${osd_ip_address_list[i]}
+%{ endfor ~}
+
+[lb]
+%{ for i, host in lb_vm_names ~}
+${lb_vm_names[i]}
+%{ endfor ~}
+
+[monitoring]
+${mon_vm_names[0]}
+
+[mons]
+%{ for i, host in mon_vm_names ~}
+${mon_vm_names[i]}
+%{ endfor ~}
+
+[mgrs]
+%{ for i, host in mon_vm_names ~}
+${mon_vm_names[i]}
+%{ endfor ~}
+
+[mdss]
+%{ for i, host in mds_vm_names ~}
+${mds_vm_names[i]}
+%{ endfor ~}
+
+[osds]
+%{ for i, host in osd_vm_names ~}
+${osd_vm_names[i]}
+%{ endfor ~}
+
+[all:vars]
+public_ip=${lb_nat_ip_address_list[0]}
+ansible_user=ubuntu

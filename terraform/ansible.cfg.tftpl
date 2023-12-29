@@ -1,0 +1,8 @@
+[defaults]
+inventory = inventory.ini
+host_key_checking = no
+roles_path = roles
+
+[ssh_connection]
+ssh_args = -o ProxyCommand="ssh -p 22 -W %h:%p -q ubuntu@${lb_nat_ip_address} -o StrictHostKeyChecking=no" -o ForwardAgent=yes -o ControlMaster=auto -o ControlPersist=15m -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
+pipelining = yes

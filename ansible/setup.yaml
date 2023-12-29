@@ -1,0 +1,19 @@
+- name: Install and setup docker
+  hosts: all
+  become: true 
+    
+  vars:
+    docker_packages:
+    - https://download.docker.com/linux/ubuntu/dists/jammy/pool/stable/amd64/containerd.io_1.6.9-1_amd64.deb
+    - https://download.docker.com/linux/ubuntu/dists/jammy/pool/stable/amd64/docker-ce-cli_24.0.2-1~ubuntu.22.04~jammy_amd64.deb
+    - https://download.docker.com/linux/ubuntu/dists/jammy/pool/stable/amd64/docker-ce_24.0.2-1~ubuntu.22.04~jammy_amd64.deb
+    - https://download.docker.com/linux/ubuntu/dists/jammy/pool/stable/amd64/docker-buildx-plugin_0.10.5-1~ubuntu.22.04~jammy_amd64.deb
+    - https://download.docker.com/linux/ubuntu/dists/jammy/pool/stable/amd64/docker-compose-plugin_2.18.1-1~ubuntu.22.04~jammy_amd64.deb
+
+  tasks:
+  - name: Install Docker and Docker Compose
+    ansible.builtin.apt:
+      deb: "{{ item }}"
+      state: present
+    loop: "{{ docker_packages }}"
+

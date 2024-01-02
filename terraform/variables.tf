@@ -1,3 +1,7 @@
+variable "vm_image_id" {
+  type = string
+}
+
 variable "yc_token" {
   type = string
 }

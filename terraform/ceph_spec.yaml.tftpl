@@ -1,0 +1,45 @@
+%{ for i, host in mon_vm_names ~}
+---
+service_type: host
+addr: ${mon_ip_address_list[i]}
+hostname: ${mon_vm_names[i]}
+%{ endfor ~}
+
+%{ for i, host in mds_vm_names ~}
+---
+service_type: host
+addr: ${mds_ip_address_list[i]}
+hostname: ${mds_vm_names[i]}
+%{ endfor ~}
+
+%{ for i, host in osd_vm_names ~}
+---
+service_type: host
+addr: ${osd_ip_address_list[i]}
+hostname: ${osd_vm_names[i]}
+%{ endfor ~}
+
+---
+service_type: mon
+placement:
+  hosts:
+%{ for i, host in mon_vm_names ~}
+  - ${mon_vm_names[i]}
+%{ endfor ~}
+
+---
+service_type: mgr
+placement:
+  hosts:
+%{ for i, host in mon_vm_names ~}
+  - ${mon_vm_names[i]}
+%{ endfor ~}
+
+---
+service_type: osd
+service_id: default_placement_group
+placement:
+  host_pattern: 'osd*'
+data_devices:
+  paths:
+  - /dev/vdb

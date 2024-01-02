@@ -3,17 +3,52 @@
   become: true 
     
   vars:
-    docker_packages:
-    - https://download.docker.com/linux/ubuntu/dists/jammy/pool/stable/amd64/containerd.io_1.6.9-1_amd64.deb
-    - https://download.docker.com/linux/ubuntu/dists/jammy/pool/stable/amd64/docker-ce-cli_24.0.2-1~ubuntu.22.04~jammy_amd64.deb
-    - https://download.docker.com/linux/ubuntu/dists/jammy/pool/stable/amd64/docker-ce_24.0.2-1~ubuntu.22.04~jammy_amd64.deb
-    - https://download.docker.com/linux/ubuntu/dists/jammy/pool/stable/amd64/docker-buildx-plugin_0.10.5-1~ubuntu.22.04~jammy_amd64.deb
-    - https://download.docker.com/linux/ubuntu/dists/jammy/pool/stable/amd64/docker-compose-plugin_2.18.1-1~ubuntu.22.04~jammy_amd64.deb
+    requirements_pkgs:
+    - ca-certificates
+    - curl
+    - gnupg
+    - lvm2
+    - ceph-common
+    docker_pkgs:
+    - docker-ce 
+    - docker-ce-cli
+    - containerd.io
+    - docker-buildx-plugin
+    - docker-compose-plugin
 
   tasks:
-  - name: Install Docker and Docker Compose
+  - name: Install requirements
     ansible.builtin.apt:
-      deb: "{{ item }}"
+      name: "{{ requirements_pkgs }}"
       state: present
-    loop: "{{ docker_packages }}"
+      update_cache: true
 
+  - name: Import Repo Key
+    ansible.builtin.apt_key:
+      id: "7EA0A9C3F273FCD8"
+      url: "https://download.docker.com/linux/ubuntu/gpg"
+      keyring: "/etc/apt/trusted.gpg.d/docker.gpg"
+
+  - name: Install Docker repo
+    ansible.builtin.copy:
+      dest: "/etc/apt/sources.list.d/docker.list"
+      content: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+
+  - name: Install Docker
+    ansible.builtin.apt:
+      name: "{{ docker_pkgs }}"
+      state: present
+      update_cache: true
+
+  - name: Copy cephadm binary
+    ansible.builtin.get_url:
+      url: "https://github.com/ceph/ceph/raw/quincy/src/cephadm/cephadm"
+      dest: "/usr/local/bin/cephadm"
+      mode: "0755"
+        #when: ansible_hostname == "mon0"
+
+  - name: Copy bootstrap config
+    ansible.builtin.copy:
+      src: "ceph_spec.yaml"
+      dest: "/root/ceph_spec.yaml"
+        #when: ansible_hostname == "mon0"

@@ -4,7 +4,7 @@ resource "yandex_compute_instance" "lb" {
   platform_id               = "standard-v3"
   zone                      = var.yc_zones[count.index % length(var.yc_zones)]
   allow_stopping_for_update = true
-  hostname = "lb${count.index}.otus.local"
+  hostname                  = "lb${count.index}.otus.local"
 
   resources {
     cores         = 2
@@ -14,8 +14,7 @@ resource "yandex_compute_instance" "lb" {
 
   boot_disk {
     initialize_params {
-      #image_id = "fd82sqrj4uk9j7vlki3q"   # ubuntu 22.04
-      image_id = "fd839i1233e8krfrf92s"    # ubuntu 20.04
+      image_id = var.vm_image_id
       size     = 8
       type     = "network-ssd"
     }
@@ -28,7 +27,8 @@ resource "yandex_compute_instance" "lb" {
 
   metadata = {
     ssh-keys  = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
-    user-data = "#cloud-config\nhostname: lb${count.index}"
+    #user-data = "#cloud-config\nhostname: lb${count.index}\nwrite_files:\n- path: /home/ubuntu/.ssh/id_rsa\n  defer: true\n  permissions: 600\n  owner: ubuntu:ubuntu\n  encoding: b64\n  content: base64encode(tls_private_key.ceph-key.private_key_openssh)"
+    #user-data = "#cloud-config\nhostname: lb${count.index}\nwrite_files:\n- path: /home/ubuntu/.ssh/id_rsa\n  defer: true\n  permissions: 0600\n  owner: ubuntu:ubuntu\n  encoding: b64\n  content: ${base64encode("${tls_private_key.ceph-key.private_key_openssh}")}\n- path: /home/ubuntu/.ssh/id_rsa.pub\n  defer: true\n  permissions: 0600\n  owner: ubuntu:ubuntu\n  encoding: b64\n  content: ${base64encode("${tls_private_key.ceph-key.public_key_openssh}")}"
   }
 }
 
@@ -38,7 +38,7 @@ resource "yandex_compute_instance" "mon_mgr" {
   platform_id               = "standard-v3"
   zone                      = var.yc_zones[count.index % length(var.yc_zones)]
   allow_stopping_for_update = true
-  hostname = "mon${count.index}.otus.local"
+  hostname                  = "mon${count.index}.otus.local"
 
   resources {
     cores         = 2
@@ -48,21 +48,22 @@ resource "yandex_compute_instance" "mon_mgr" {
 
   boot_disk {
     initialize_params {
-      #image_id = "fd82sqrj4uk9j7vlki3q"   # ubuntu 22.04
-      image_id = "fd839i1233e8krfrf92s"    # ubuntu 20.04
-      size     = 8
+      image_id = var.vm_image_id
+      size     = 16
       type     = "network-ssd"
     }
   }
 
   network_interface {
     subnet_id = yandex_vpc_subnet.yc_subnet[count.index % length(var.yc_zones)].id
-    nat       = false
+    #nat       = false
+    #nat       =  count.index==0 ? true : false
+    nat       =  count.index==0
   }
 
   metadata = {
     ssh-keys  = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
-    user-data = "#cloud-config\nhostname: mon${count.index}"
+    user-data = count.index!=0 ? "#cloud-config\nhostname: mon${count.index}\nssh_authorized_keys:\n- ${tls_private_key.ceph-key.public_key_openssh}" : "#cloud-config\nhostname: mon${count.index}\nwrite_files:\n- path: /home/ubuntu/.ssh/id_rsa\n  defer: true\n  permissions: 0600\n  owner: ubuntu:ubuntu\n  encoding: b64\n  content: ${base64encode("${tls_private_key.ceph-key.private_key_openssh}")}\n- path: /home/ubuntu/.ssh/id_rsa.pub\n  defer: true\n  permissions: 0600\n  owner: ubuntu:ubuntu\n  encoding: b64\n  content: ${base64encode("${tls_private_key.ceph-key.public_key_openssh}")}"
   }
 }
 
@@ -72,7 +73,7 @@ resource "yandex_compute_instance" "mds" {
   platform_id               = "standard-v3"
   zone                      = var.yc_zones[count.index % length(var.yc_zones)]
   allow_stopping_for_update = true
-  hostname = "mds${count.index}.otus.local"
+  hostname                  = "mds${count.index}.otus.local"
 
   resources {
     cores         = 2
@@ -82,9 +83,8 @@ resource "yandex_compute_instance" "mds" {
 
   boot_disk {
     initialize_params {
-      #image_id = "fd82sqrj4uk9j7vlki3q"   # ubuntu 22.04
-      image_id = "fd839i1233e8krfrf92s"    # ubuntu 20.04
-      size     = 8
+      image_id = var.vm_image_id
+      size     = 16
       type     = "network-ssd"
     }
   }
@@ -96,7 +96,7 @@ resource "yandex_compute_instance" "mds" {
 
   metadata = {
     ssh-keys  = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
-    user-data = "#cloud-config\nhostname: mds${count.index}"
+    user-data = "#cloud-config\nhostname: mds${count.index}\nssh_authorized_keys:\n- ${tls_private_key.ceph-key.public_key_openssh}"
   }
 }
 
@@ -106,7 +106,7 @@ resource "yandex_compute_instance" "osd" {
   platform_id               = "standard-v3"
   zone                      = var.yc_zones[count.index % length(var.yc_zones)]
   allow_stopping_for_update = true
-  hostname = "osd${count.index}.otus.local"
+  hostname                  = "osd${count.index}.otus.local"
 
   resources {
     cores         = 2
@@ -116,9 +116,8 @@ resource "yandex_compute_instance" "osd" {
 
   boot_disk {
     initialize_params {
-      #image_id = "fd82sqrj4uk9j7vlki3q"   # ubuntu 22.04
-      image_id = "fd839i1233e8krfrf92s"    # ubuntu 20.04
-      size     = 8
+      image_id = var.vm_image_id
+      size     = 16
       type     = "network-ssd"
     }
   }
@@ -136,6 +135,7 @@ resource "yandex_compute_instance" "osd" {
 
   metadata = {
     ssh-keys  = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
+    user-data = "#cloud-config\nhostname: osd${count.index}\nssh_authorized_keys:\n- ${tls_private_key.ceph-key.public_key_openssh}"
   }
 }
 

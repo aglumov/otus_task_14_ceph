@@ -45,10 +45,15 @@
       url: "https://github.com/ceph/ceph/raw/quincy/src/cephadm/cephadm"
       dest: "/usr/local/bin/cephadm"
       mode: "0755"
-        #when: ansible_hostname == "mon0"
+    when: ansible_hostname == "mon0"
 
   - name: Copy bootstrap config
     ansible.builtin.copy:
       src: "ceph_spec.yaml"
       dest: "/root/ceph_spec.yaml"
-        #when: ansible_hostname == "mon0"
+    when: ansible_hostname == "mon0"
+
+  - name: Print command to deploy ceph
+    ansible.builtin.debug:
+      msg: "cephadm bootstrap --mon-ip={{ hostvars['mon0'].ansible_default_ipv4.address }} --apply-spec=/root/ceph_spec.yaml --initial-dashboard-user=otus --initial-dashboard-password=otus --dashboard-password-noupdate --ssh-user ubuntu --ssh-private-key /home/ubuntu/.ssh/id_rsa --ssh-public-key /home/ubuntu/.ssh/id_rsa.pub"
+    run_once: true

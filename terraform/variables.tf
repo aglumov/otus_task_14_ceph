@@ -24,3 +24,12 @@ variable "yc_subnets" {
   default = [["192.168.0.0/24"], ["192.168.1.0/24"], ["192.168.2.0/24"]]
 }
 
+variable "osd_count" {
+  type    = number
+  default = 4
+}
+
+variable "disks_per_osd" {
+  type    = number
+  default = 2
+}

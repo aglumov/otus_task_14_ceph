@@ -26,7 +26,7 @@ variable "yc_subnets" {
 
 variable "osd_count" {
   type    = number
-  default = 4
+  default = 5
 }
 
 variable "disks_per_osd" {

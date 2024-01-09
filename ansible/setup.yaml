@@ -17,6 +17,14 @@
     - docker-compose-plugin
 
   tasks:
+  - name: All | Disable auto updates on Ubuntu
+    ansible.builtin.copy:
+      dest: /etc/apt/apt.conf.d/20auto-upgrades
+      content: |
+        APT::Periodic::Update-Package-Lists "0";
+        APT::Periodic::Unattended-Upgrade "0";
+    when: ansible_distribution == 'Ubuntu'
+
   - name: Install requirements
     ansible.builtin.apt:
       name: "{{ requirements_pkgs }}"
@@ -53,7 +61,11 @@
       dest: "/root/ceph_spec.yaml"
     when: ansible_hostname == "mon0"
 
-  - name: Print command to deploy ceph
+  - name: Commands to deploy ceph
     ansible.builtin.debug:
-      msg: "cephadm bootstrap --mon-ip={{ hostvars['mon0'].ansible_default_ipv4.address }} --apply-spec=/root/ceph_spec.yaml --initial-dashboard-user=otus --initial-dashboard-password=otus --dashboard-password-noupdate --ssh-user ubuntu --ssh-private-key /home/ubuntu/.ssh/id_rsa --ssh-public-key /home/ubuntu/.ssh/id_rsa.pub"
+      msg: "{{ item }}" 
+    loop: 
+    - "cephadm bootstrap --mon-ip={{ hostvars['mon0'].ansible_default_ipv4.address }} --apply-spec=/root/ceph_spec.yaml --initial-dashboard-user=otus --initial-dashboard-password=otus --dashboard-password-noupdate --ssh-user ubuntu --ssh-private-key /home/ubuntu/.ssh/id_rsa --ssh-public-key /home/ubuntu/.ssh/id_rsa.pub"
+    - "ceph config set mon public_network 192.168.0.0/24,192.168.1.0/24,192.168.2.0/24"
+    - "ceph orch restart mon"  
     run_once: true

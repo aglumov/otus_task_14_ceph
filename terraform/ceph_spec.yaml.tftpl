@@ -2,19 +2,25 @@
 ---
 service_type: host
 addr: ${mon_ip_address_list[i]}
-hostname: ${mon_vm_names[i]}.otus.local
+hostname: ${mon_vm_names[i]}
+location:
+  datacenter: ${mon_vm_zones[i]}
 %{ endfor ~}
 %{ for i, host in mds_vm_names ~}
 ---
 service_type: host
 addr: ${mds_ip_address_list[i]}
-hostname: ${mds_vm_names[i]}.otus.local
+hostname: ${mds_vm_names[i]}
+location:
+  datacenter: ${mds_vm_zones[i]}
 %{ endfor ~}
 %{ for i, host in osd_vm_names ~}
 ---
 service_type: host
 addr: ${osd_ip_address_list[i]}
-hostname: ${osd_vm_names[i]}.otus.local
+hostname: ${osd_vm_names[i]}
+location:
+  datacenter: ${osd_vm_zones[i]}
 %{ endfor ~}
 ---
 service_type: mon

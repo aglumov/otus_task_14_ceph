@@ -31,10 +31,13 @@ resource "local_file" "ceph_spec" {
     {
       mon_ip_address_list = yandex_compute_instance.mon_mgr[*].network_interface[0].ip_address
       mon_vm_names        = yandex_compute_instance.mon_mgr[*].name
+      mon_vm_zones        = yandex_compute_instance.mon_mgr[*].zone
       mds_ip_address_list = yandex_compute_instance.mds[*].network_interface[0].ip_address
       mds_vm_names        = yandex_compute_instance.mds[*].name
+      mds_vm_zones        = yandex_compute_instance.mds[*].zone
       osd_ip_address_list = yandex_compute_instance.osd[*].network_interface[0].ip_address
       osd_vm_names        = yandex_compute_instance.osd[*].name
+      osd_vm_zones        = yandex_compute_instance.osd[*].zone
     }
   )
 }
